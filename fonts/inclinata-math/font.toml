@@ -1,0 +1,8 @@
+name = "Inclinata Math"
+file = "InclinataMath-Regular.otf"
+license = "OFL-1.1"
+style = "serif"
+base = "Garamond"
+designer = "Matheus Mota, slanting Garamond-Math by Yuansheng Zhao and Xiangdong Zeng"
+source = "https://github.com/matheusmota-dev-br/mathfonts/blob/main/scripts/slant.py"
+sample = '\nabla f = \frac{\partial f}{\partial x}\,\hat{\imath} + \frac{\partial f}{\partial y}\,\hat{\jmath} \qquad \int_a^b f(x)\,dx'
