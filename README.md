@@ -11,6 +11,7 @@ The catalog has 24 fonts, all free to share: STIX Two, Latin Modern, New Compute
 - **Fonts**: a grid of every font with the same equation. You can switch the equation, filter by style and sort by how many math symbols a font has.
 - **A page per font**: specimens, the checks it passed, how many of the math symbols mathra draws it has, block by block, with the ones it lacks, and the download.
 - **Every glyph**: for each font, all its glyphs in the boxes of the printed grid, with what it lacks marked.
+- **Write**: type LaTeX and see it in any font of the catalog, or in a font file of your own, drawn by mathra in the browser.
 - **Compare**: the same equations in up to three fonts, side by side.
 - **Add your font**: how to send a font with a pull request.
 
