@@ -8,8 +8,19 @@ use crate::catalog::{Entry, STYLES};
 use crate::check::Report;
 use crate::render::{self, SPECIMENS};
 
+/// A short hash of the script and the style sheet, in their URLs: a browser that kept an older
+/// copy fetches the new one after a build changes them.
+fn asset_version() -> String {
+    use sha2::{Digest, Sha256};
+    let mut h = Sha256::new();
+    h.update(include_str!("../site/app.js"));
+    h.update(include_str!("../site/style.css"));
+    h.finalize().iter().take(5).map(|b| format!("{b:02x}")).collect()
+}
+
 const ICONS: &[(&str, &str)] = &[
     ("download", r#"<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>"#),
+    ("pencil", r#"<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>"#),
     ("columns", r#"<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/>"#),
     ("grid", r#"<rect x="3" y="3" width="18" height="18"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>"#),
     ("check", r#"<path d="m5 12 5 5 9-10"/>"#),
@@ -37,7 +48,7 @@ fn repository() -> Option<String> {
 
 /// A whole page. `base` leads from the page back to the site's root ("" or "../").
 fn page(title: &str, description: &str, base: &str, current: &str, body: &str) -> String {
-    let nav = [("index.html", "Fonts"), ("compare.html", "Compare"), ("draw.html", "Draw a font"), ("contribute.html", "Add your font")]
+    let nav = [("index.html", "Fonts"), ("write.html", "Write"), ("compare.html", "Compare"), ("draw.html", "Draw a font"), ("contribute.html", "Add your font")]
         .iter()
         .map(|(href, label)| format!(r#"<a href="{base}{href}"{}>{label}</a>"#, if *href == current { r#" aria-current="page""# } else { "" }))
         .collect::<String>();
@@ -54,9 +65,9 @@ fn page(title: &str, description: &str, base: &str, current: &str, body: &str) -
 <script>try {{ const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; }} catch {{}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="{base}style.css">
+<link rel="stylesheet" href="{base}style.css?v={v}">
 </head>
-<body data-base="{base}">
+<body data-base="{base}" data-mathra="{mathra}">
 <header class="top"><div class="wrap">
   <a class="logo" href="{base}index.html">math<em>fonts</em></a>
   <nav class="nav" aria-label="Site">{nav}</nav>
@@ -69,7 +80,7 @@ fn page(title: &str, description: &str, base: &str, current: &str, body: &str) -
   <span>Every equation on this site is drawn by <a href="https://github.com/matheusmota-dev-br/mathra">mathra</a> {}, in the font it shows.</span>
   <span>Each font belongs to its authors and comes with its license; the files are as they published them.</span>
 </div></footer>
-<script src="{base}app.js"></script>
+<script src="{base}app.js?v={v}"></script>
 </body>
 </html>
 "##,
@@ -77,6 +88,8 @@ fn page(title: &str, description: &str, base: &str, current: &str, body: &str) -
         icon("sun", "i-light"),
         icon("moon", "i-dark"),
         mathra::VERSION,
+        v = asset_version(),
+        mathra = mathra_module(),
     )
 }
 
@@ -92,7 +105,9 @@ fn equation_chips() -> String {
     SPECIMENS
         .iter()
         .enumerate()
-        .map(|(i, (id, caption, _))| format!(r#"<button class="chip" type="button" data-equation="{id}" aria-pressed="{}">{caption}</button>"#, i == 0))
+        .map(|(i, (id, caption, tex))| {
+            format!(r#"<button class="chip" type="button" data-equation="{id}" data-tex="{}" aria-pressed="{}">{caption}</button>"#, escape(tex), i == 0)
+        })
         .collect()
 }
 
@@ -102,7 +117,7 @@ fn index(results: &[(Entry, Report)], first: &[String]) -> String {
         let name = escape(&e.meta.name);
         let _ = write!(
             cards,
-            r#"<article class="card" data-slug="{slug}" data-style="{style}" data-name="{name}" data-coverage="{cov}">
+            r#"<article class="card" data-slug="{slug}" data-file="files/{slug}/{file}" data-style="{style}" data-name="{name}" data-coverage="{cov}">
   <a class="spec" href="fonts/{slug}.html" tabindex="-1" aria-hidden="true">{svg}</a>
   <div class="meta">
     <div class="who"><a href="fonts/{slug}.html" title="{name}">{name}</a><span class="sub">{base} · {style_label}</span></div>
@@ -131,7 +146,11 @@ fn index(results: &[(Entry, Report)], first: &[String]) -> String {
   <p>No math font of your own yet? <a href="draw.html">Draw one by hand</a>: print a grid, fill it and photograph it.</p>
 </section>
 <div class="toolbar">
-  <div class="group"><span>Equation</span><div class="chips" role="group" aria-label="Equation shown">{eqs}</div></div>
+  <div class="group grow">
+    <label class="group"><span>Equation, in LaTeX: type your own and every font draws it</span><input type="text" id="grid-tex" value="{first}" spellcheck="false" autocapitalize="off" autocomplete="off"></label>
+    <div class="chips" role="group" aria-label="Equation shown">{eqs}</div>
+    <span class="sub" id="grid-status" aria-live="polite"></span>
+  </div>
 </div>
 <div class="toolbar">
   <div class="group"><span>Style</span><div class="chips" role="group" aria-label="Filter by style">{styles}</div></div>
@@ -143,6 +162,7 @@ fn index(results: &[(Entry, Report)], first: &[String]) -> String {
 <div class="comparebar" id="comparebar" hidden><span id="compare-count"></span><button type="button" id="compare-clear">Clear</button><a id="compare-go" href="compare.html">Compare</a></div>"#,
         n = results.len(),
         eqs = equation_chips(),
+        first = escape(SPECIMENS[0].2),
         styles = style_chips(),
     );
     page("mathfonts", "A catalog of OpenType math fonts, every equation drawn by mathra.", "", "index.html", &body)
@@ -194,6 +214,7 @@ mathra.tex_to_svg(r"\frac{{a}}{{b}}", font=font)</pre>
   </div>
   <aside>
     <a class="btn" href="../files/{slug}/{file}" download>{download} Download {file}</a>
+    <a class="btn ghost" href="../write.html?font={slug}">{pencil} Write in {name}</a>
     <a class="btn ghost" href="{slug}-glyphs.html">{grid} See every glyph</a>
     <a class="btn ghost" href="../compare.html?fonts=stix-two-math,{slug}">{columns} Compare with STIX Two Math</a>
     <dl>
@@ -216,6 +237,7 @@ mathra.tex_to_svg(r"\frac{{a}}{{b}}", font=font)</pre>
         slug = e.slug,
         download = icon("download", ""),
         columns = icon("columns", ""),
+        pencil = icon("pencil", ""),
         grid = icon("grid", ""),
         license = escape(e.license_label()),
         version = escape(&r.version),
@@ -250,6 +272,39 @@ fn compare(results: &[(Entry, Report)]) -> String {
         json(serde_json::to_string(&equations).unwrap_or_default()),
     );
     page("Compare · mathfonts", "Math fonts side by side, drawn by mathra.", "", "compare.html", &body)
+}
+
+/// mathra's browser module, at the version that drew the site's specimens, so an equation typed
+/// on the Write page comes out as the same SVG.
+fn mathra_module() -> String {
+    format!("https://cdn.jsdelivr.net/npm/@mathlabs/mathra@{}/web/index.js", mathra::VERSION)
+}
+
+fn write_page(results: &[(Entry, Report)]) -> String {
+    let data: Vec<serde_json::Value> = results
+        .iter()
+        .map(|(e, _)| serde_json::json!({ "slug": e.slug, "name": e.meta.name, "file": format!("files/{}/{}", e.slug, e.meta.file), "sample": e.meta.sample }))
+        .collect();
+    let examples: Vec<(&str, &str)> = SPECIMENS.iter().map(|(_, caption, tex)| (*caption, *tex)).collect();
+    let json = |v: String| v.replace("</", "<\\/");
+    let options: String = results.iter().map(|(e, _)| format!(r#"<option value="{}">{}</option>"#, e.slug, escape(&e.meta.name))).collect();
+    let body = format!(
+        r#"<section class="intro"><h1>Write an equation</h1><p>Type LaTeX and see it in any font of the catalog, or in a font file of your own. mathra draws it in your browser as you type; nothing is sent anywhere.</p></section>
+<div class="pickers">
+  <label class="group"><span>Font</span><select id="write-font">{options}<option value="">Your own file…</option></select></label>
+  <label class="group" id="write-file-group" hidden><span>Font file (.otf or .ttf with a MATH table)</span><input type="file" id="write-file" accept=".otf,.ttf,font/otf,font/ttf"></label>
+</div>
+<div class="group"><span>Examples</span><div class="chips" id="write-examples"></div></div>
+<label class="group"><span>LaTeX</span><textarea id="write-tex" rows="3" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea></label>
+<div class="hero write-out" id="write-out" aria-live="polite"><span class="sub">Loading mathra…</span></div>
+<div class="write-bar"><p class="sub" id="write-status"></p><button class="btn ghost" type="button" id="write-download" disabled>{download} Download SVG</button></div>
+<script type="application/json" id="write-fonts">{}</script>
+<script type="application/json" id="write-examples-data">{}</script>"#,
+        json(serde_json::to_string(&data).unwrap_or_default()),
+        json(serde_json::to_string(&examples).unwrap_or_default()),
+        download = icon("download", ""),
+    );
+    page("Write an equation · mathfonts", "Type LaTeX and see it in any math font of the catalog, drawn by mathra in the browser.", "", "write.html", &body)
 }
 
 fn contribute() -> String {
@@ -351,6 +406,7 @@ pub fn build(root: &Path, out: &Path, results: &[(Entry, Report)]) -> Result<(),
     }
     write(&out.join("index.html"), &index(results, &first))?;
     write(&out.join("compare.html"), &compare(results))?;
+    write(&out.join("write.html"), &write_page(results))?;
     write(&out.join("contribute.html"), &contribute())?;
     let hand = results.iter().find(|(e, _)| e.slug == "euler-math").ok_or("draw.html needs Euler Math in the catalog")?;
     let font = hand.1.font.ok_or("Euler Math: not loaded")?;

@@ -145,6 +145,14 @@ pre { margin: 0; background: var(--paper); border: 1px solid var(--line); border
 
 /* compare */
 .pickers { display: flex; flex-wrap: wrap; gap: 12px; }
+.group.grow { flex: 1 1 100%; }
+#grid-tex { font: 15px/1.5 var(--mono); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 8px 12px; width: 100%; }
+textarea { font: 15px/1.5 var(--mono); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: 10px 12px; width: 100%; resize: vertical; }
+input[type="file"] { font: 13px var(--body); color: var(--ink); }
+.write-out { min-height: 180px; transition: opacity .2s; }
+.write-out.loading { opacity: .35; }
+.write-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.write-bar .warn { color: var(--warn); }
 .compare { display: grid; grid-template-columns: 160px repeat(var(--n, 3), minmax(220px, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 2px; overflow-x: auto; }
 .compare > div { padding: 18px 16px; border-bottom: 1px solid var(--line); min-height: 88px; display: grid; place-items: center; font-size: 21px; }
 .compare > .label { place-items: center start; font-size: 13px; color: var(--muted); }
