@@ -28,6 +28,7 @@ site/                    the site's style.css and app.js
 scripts/refresh.py       downloads every font again from upstream and compares
 scripts/brand.py         draws the banner and the favicon from the catalog's fonts
 scripts/grid.py          builds the grids for drawing a math font by hand (large and compact) in site/grid/
+scripts/hand.py          makes a math font from photos of the filled-in grid
 ```
 
 ```sh
