@@ -1,0 +1,8 @@
+name = "Dot Matrix Math"
+file = "DotMatrixMath-Regular.otf"
+license = "OFL-1.1"
+style = "sans"
+base = "Noto Sans"
+designer = "Matheus Mota, redrawing Noto Sans Math as a dot matrix"
+source = "https://github.com/matheusmota-dev-br/mathfonts/blob/main/scripts/blocky.py"
+sample = '\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}'
