@@ -6,6 +6,7 @@
 mod catalog;
 mod check;
 mod draw;
+mod glyphs;
 mod render;
 mod report;
 mod site;

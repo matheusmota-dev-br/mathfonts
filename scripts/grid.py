@@ -8,13 +8,15 @@ nobody traces over it.
 
 Needs fontTools and reportlab (pip install fonttools reportlab).
 
-    python3 scripts/grid.py   # writes the large and the compact grid, and a filled example of each, in site/grid/
+    python3 scripts/grid.py            # writes the large and the compact grid, and a filled example of each, in site/grid/
+    python3 scripts/grid.py --layout   # only site/grid/layout.json: every box in order, which the site reads
 
 The example is level 1 filled in with Euler Math, the catalog's handwritten font, to show where
 each glyph goes in its box.
 """
 
 import argparse
+import json
 import unicodedata
 from pathlib import Path
 
@@ -206,56 +208,50 @@ class Reference:
         canvas.drawPath(path, stroke=0, fill=1, fillMode=1)
 
 
-def size_cells(ref, hand=None):
-    """The glyphs mathra needs to set tall delimiters, display operators and wide accents.
-
-    Each cell is (STIX glyph, label, the same glyph in `hand` or None)."""
+def size_specs(ref):
+    """The glyphs mathra needs to set tall delimiters, display operators and wide accents, as STIX
+    Two Math has them, each with what finds the same glyph in another font: the character, the
+    direction, and either the size (`picks`, `k`: the k-th of the picked STIX sizes) or the piece's
+    place in the assembly (`where`). Returns (tall, wide)."""
     tall, wide, seen = [], [], set()
 
-    def counterpart(char, picks, horizontal):
-        if hand is None:
-            return [], []
-        return hand.sizes(char, picks, horizontal, clip=True)
-
-    def add(cells, glyph, label, theirs=None):
+    def add(cells, glyph, label, **spec):
         if glyph not in seen:
             seen.add(glyph)
-            cells.append((glyph, label, theirs))
+            cells.append({"glyph": glyph, "label": label, **spec})
 
-    def same_piece(parts, where):
-        return next((g for g, w in parts if w == where), None)
+    def construction(cells, char, what, picks, horizontal=False, sizes_label=None, pieces=True):
+        sizes, parts = ref.sizes(char, picks, horizontal)
+        for k, g in enumerate(sizes):
+            add(cells, g, sizes_label(k) if sizes_label else f"{what}, size {k + 2}", char=char, horizontal=horizontal, picks=picks, k=k)
+        if pieces:
+            for g, where in parts:
+                add(cells, g, f"{what}, {where} piece", char=char, horizontal=horizontal, where=where)
 
     for char, what in [("(", "left parenthesis"), (")", "right parenthesis"), ("[", "left bracket"), ("]", "right bracket"), ("{", "left brace"), ("}", "right brace"), ("⟨", "left angle"), ("⟩", "right angle"), ("|", "bar"), ("‖", "double bar"), ("⌊", "left floor"), ("⌋", "right floor"), ("⌈", "left ceiling"), ("⌉", "right ceiling")]:
-        sizes, parts = ref.sizes(char, [3, 6])
-        hs, hp = counterpart(char, [3, 6], False)
-        for i, g in enumerate(sizes, 2):
-            add(tall, g, f"{what}, size {i}", hs[i - 2] if i - 2 < len(hs) else None)
-        for g, where in parts:
-            add(tall, g, f"{what}, {where} piece", same_piece(hp, where))
-    sizes, parts = ref.sizes("√", [2, 3])
-    hs, hp = counterpart("√", [2, 3], False)
-    for i, g in enumerate(sizes, 2):
-        add(tall, g, f"radical, size {i}", hs[i - 2] if i - 2 < len(hs) else None)
-    for g, where in parts:
-        add(tall, g, f"radical, {where} piece", same_piece(hp, where))
+        construction(tall, char, what, [3, 6])
+    construction(tall, "√", "radical", [2, 3])
     for char, what in [("∑", "sum"), ("∏", "product"), ("∫", "integral"), ("∬", "double integral"), ("∮", "contour integral")]:
-        sizes, parts = ref.sizes(char, [1])
-        hs, hp = counterpart(char, [1], False)
-        for g in sizes:
-            add(tall, g, f"{what}, display", hs[0] if hs else None)
-        for g, where in parts:
-            add(tall, g, f"{what}, {where} piece", same_piece(hp, where))
+        construction(tall, char, what, [1], sizes_label=lambda k, what=what: f"{what}, display")
     for char, what in [("̂", "hat"), ("̃", "tilde")]:
-        sizes, _ = ref.sizes(char, [2, 4], horizontal=True)
-        hs, _ = counterpart(char, [2, 4], True)
-        for i, g in enumerate(sizes, 2):
-            add(wide, g, f"wide {what} {i}", hs[i - 2] if i - 2 < len(hs) else None)
+        construction(wide, char, what, [2, 4], True, sizes_label=lambda k, what=what: f"wide {what} {k + 2}", pieces=False)
     for char, what in [("→", "long arrow"), ("⏟", "underbrace"), ("⏞", "overbrace")]:
-        _, parts = ref.sizes(char, [], horizontal=True)
-        _, hp = counterpart(char, [], True)
-        for g, where in parts:
-            add(wide, g, f"{what}, {where} piece", same_piece(hp, where))
+        construction(wide, char, what, [], True)
     return tall, wide
+
+
+def size_cells(ref, hand=None):
+    """The cells of size_specs, each as (STIX glyph, label, the same glyph in `hand` or None)."""
+
+    def theirs(spec):
+        if hand is None:
+            return None
+        sizes, parts = hand.sizes(spec["char"], spec.get("picks", []), spec["horizontal"], clip=True)
+        if "where" in spec:
+            return next((g for g, w in parts if w == spec["where"]), None)
+        return sizes[spec["k"]] if spec["k"] < len(sizes) else None
+
+    return tuple([(spec["glyph"], spec["label"], theirs(spec)) for spec in cells] for cells in size_specs(ref))
 
 
 def level_three(listed):
@@ -521,10 +517,37 @@ def example_cover(c, pages, empty, layout):
     c.showPage()
 
 
+def layout():
+    """Every box of the grid, in order, for the site's page of every glyph of a font: the levels,
+    their sections with each character and its Unicode name, and the sizes and pieces."""
+    one = level_one()
+    two = [s for s in level_two() if s[2] != "skip"]
+    listed = {c for _, items, _ in one + two for c in items}
+    tall, wide = size_specs(Reference(REFERENCE))
+
+    def sections(level):
+        return [{"title": title, "chars": [[c, unicodedata.name(c, "")] for c in items]} for title, items, _ in level]
+
+    return {
+        "levels": [
+            {"name": "Level 1, the essentials", "sections": sections(one), "tall": tall, "wide": wide},
+            {"name": "Level 2, the math alphabets", "sections": sections(two)},
+            {"name": "Level 3, everything else", "sections": sections(level_three(listed))},
+        ]
+    }
+
+
+LAYOUT = ROOT / "site/grid/layout.json"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--out", default=str(ROOT / "site/grid/mathfonts-grid.pdf"))
+    parser.add_argument("--layout", action="store_true", help=f"only write {LAYOUT.relative_to(ROOT)}, the list of boxes the site reads")
     args = parser.parse_args()
+    LAYOUT.write_text(json.dumps(layout(), ensure_ascii=False, separators=(",", ":")) + "\n")
+    if args.layout:
+        return
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     build(out, REGULAR)

@@ -11,6 +11,7 @@ use crate::render::{self, SPECIMENS};
 const ICONS: &[(&str, &str)] = &[
     ("download", r#"<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>"#),
     ("columns", r#"<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/>"#),
+    ("grid", r#"<rect x="3" y="3" width="18" height="18"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>"#),
     ("check", r#"<path d="m5 12 5 5 9-10"/>"#),
     ("alert", r#"<circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/>"#),
     ("back", r#"<path d="m15 18-6-6 6-6"/>"#),
@@ -193,6 +194,7 @@ mathra.tex_to_svg(r"\frac{{a}}{{b}}", font=font)</pre>
   </div>
   <aside>
     <a class="btn" href="../files/{slug}/{file}" download>{download} Download {file}</a>
+    <a class="btn ghost" href="{slug}-glyphs.html">{grid} See every glyph</a>
     <a class="btn ghost" href="../compare.html?fonts=stix-two-math,{slug}">{columns} Compare with STIX Two Math</a>
     <dl>
       <dt>License</dt><dd><a href="../files/{slug}/LICENSE.txt">{license}</a></dd>
@@ -214,6 +216,7 @@ mathra.tex_to_svg(r"\frac{{a}}{{b}}", font=font)</pre>
         slug = e.slug,
         download = icon("download", ""),
         columns = icon("columns", ""),
+        grid = icon("grid", ""),
         license = escape(e.license_label()),
         version = escape(&r.version),
         glyphs = r.glyphs,
@@ -314,6 +317,9 @@ pub fn build(root: &Path, out: &Path, results: &[(Entry, Report)]) -> Result<(),
         std::fs::remove_dir_all(out).map_err(|e| format!("{}: {e}", out.display()))?;
     }
     let mut first = Vec::new();
+    // the grey samples of the pages of every glyph
+    let stix = results.iter().find(|(e, _)| e.slug == "stix-two-math").ok_or("the glyph pages need STIX Two Math in the catalog")?;
+    let stix = std::fs::read(stix.0.font_path()).map_err(|err| format!("STIX Two Math: {err}"))?;
     for (e, r) in results {
         let font = r.font.ok_or_else(|| format!("{}: not loaded", e.meta.name))?;
         // every specimen, as a file for the grid's equation switch and the comparison
@@ -336,6 +342,10 @@ pub fn build(root: &Path, out: &Path, results: &[(Entry, Report)]) -> Result<(),
             }
         };
         write(&out.join(format!("fonts/{}.html", e.slug)), &font_page(e, r, &specs, &hero, &caption)?)?;
+        let font_bytes = std::fs::read(e.font_path()).map_err(|err| format!("{}: {err}", e.font_path().display()))?;
+        let glyphs = crate::glyphs::body(e, &font_bytes, &stix, &icon("back", ""))?;
+        let title = format!("Every glyph of {} · mathfonts", e.meta.name);
+        write(&out.join(format!("fonts/{}-glyphs.html", e.slug)), &page(&title, &format!("Every glyph of {}, in the boxes of the printed grid.", e.meta.name), "../", "", &glyphs))?;
         copy(&e.font_path(), &out.join(format!("files/{}/{}", e.slug, e.meta.file)))?;
         copy(&e.dir.join("LICENSE.txt"), &out.join(format!("files/{}/LICENSE.txt", e.slug)))?;
     }
