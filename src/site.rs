@@ -48,6 +48,8 @@ fn page(title: &str, description: &str, base: &str, current: &str, body: &str) -
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{title}</title>
 <meta name="description" content="{description}">
+<link rel="icon" href="{base}favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{base}apple-touch-icon.png">
 <script>try {{ const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; }} catch {{}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -347,7 +349,7 @@ pub fn build(root: &Path, out: &Path, results: &[(Entry, Report)]) -> Result<(),
         &out.join("draw.html"),
         &page("Draw a math font · mathfonts", "Print a grid, draw every glyph of a math font by hand, and see a filled example.", "", "draw.html", &draw),
     )?;
-    for asset in ["style.css", "app.js", "grid/mathfonts-grid.pdf", "grid/mathfonts-grid-example.pdf", "grid/mathfonts-grid-compact.pdf", "grid/mathfonts-grid-compact-example.pdf"] {
+    for asset in ["style.css", "app.js", "favicon.svg", "apple-touch-icon.png", "grid/mathfonts-grid.pdf", "grid/mathfonts-grid-example.pdf", "grid/mathfonts-grid-compact.pdf", "grid/mathfonts-grid-compact-example.pdf"] {
         copy(&root.join("site").join(asset), &out.join(asset))?;
     }
     Ok(())
