@@ -1,0 +1,8 @@
+name = "Pencil Math"
+file = "PencilMath-Regular.otf"
+license = "OFL-1.1"
+style = "handwritten"
+base = "Handwriting"
+designer = "Matheus Mota, by hand on the mathfonts grid"
+source = "https://github.com/matheusmota-dev-br/mathfonts/blob/main/scripts/hand.py"
+sample = '\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}'
