@@ -1,0 +1,11 @@
+name = "TeX Gyre DejaVu Math"
+file = "texgyredejavu-math.otf"
+license = "GUST-Font-License"
+style = "serif"
+base = "DejaVu"
+source = "https://ctan.org/pkg/tex-gyre-math"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/tex-gyre-math.zip"
+path = "tex-gyre-math/opentype/texgyredejavu-math.otf"

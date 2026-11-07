@@ -1,0 +1,11 @@
+name = "Garamond-Math"
+file = "Garamond-Math.otf"
+license = "OFL-1.1"
+style = "serif"
+base = "Garamond"
+source = "https://ctan.org/pkg/garamond-math"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/garamond-math.zip"
+path = "garamond-math/Garamond-Math.otf"

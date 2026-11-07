@@ -1,0 +1,12 @@
+name = "Fira Math"
+file = "FiraMath-Regular.otf"
+license = "OFL-1.1"
+style = "sans"
+base = "Fira Sans"
+designer = "Xiangdong Zeng"
+source = "https://ctan.org/pkg/firamath"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/firamath.zip"
+path = "firamath/FiraMath-Regular.otf"

@@ -1,0 +1,12 @@
+name = "Libertinus Math"
+file = "LibertinusMath-Regular.otf"
+license = "OFL-1.1"
+style = "serif"
+base = "Linux Libertine"
+designer = "Philipp H. Poll, Khaled Hosny"
+source = "https://ctan.org/pkg/libertinus-fonts"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/libertinus-fonts.zip"
+path = "libertinus-fonts/otf/LibertinusMath-Regular.otf"

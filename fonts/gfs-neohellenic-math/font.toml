@@ -1,0 +1,11 @@
+name = "GFS Neohellenic Math"
+file = "GFSNeohellenicMath.otf"
+license = "OFL-1.1"
+style = "sans"
+base = "GFS Neohellenic"
+source = "https://ctan.org/pkg/gfsneohellenicmath"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/gfsneohellenicmath.zip"
+path = "gfsneohellenicmath/GFSNeohellenicMath.otf"

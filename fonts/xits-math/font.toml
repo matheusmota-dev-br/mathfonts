@@ -1,0 +1,12 @@
+name = "XITS Math"
+file = "XITSMath-Regular.otf"
+license = "OFL-1.1"
+style = "serif"
+base = "Times"
+designer = "MicroPress Inc., with final additions and corrections provided by Coen Hoffman, Elsevier (retired)"
+source = "https://ctan.org/pkg/xits"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/xits.zip"
+path = "xits/XITSMath-Regular.otf"

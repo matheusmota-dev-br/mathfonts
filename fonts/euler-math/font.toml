@@ -1,0 +1,12 @@
+name = "Euler Math"
+file = "Euler-Math.otf"
+license = "OFL-1.1"
+style = "handwritten"
+base = "Euler"
+designer = "Hermann Zapf"
+source = "https://ctan.org/pkg/euler-math"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/euler-math.zip"
+path = "euler-math/Euler-Math.otf"

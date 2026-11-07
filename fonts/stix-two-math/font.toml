@@ -1,0 +1,12 @@
+name = "STIX Two Math"
+file = "STIXTwoMath-Regular.otf"
+license = "OFL-1.1"
+style = "serif"
+base = "Times"
+designer = "Ross Mills, John Hudson & Paul Hanslow, Tiro Typeworks Ltd; with prior portions MicroPress Inc., and Coen Hoffman."
+source = "https://ctan.org/pkg/stix2-otf"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/stix2-otf.zip"
+path = "stix2-otf/STIXTwoMath-Regular.otf"

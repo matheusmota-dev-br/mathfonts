@@ -1,0 +1,11 @@
+name = "New Computer Modern Math"
+file = "NewCMMath-Regular.otf"
+license = "GUST-Font-License"
+style = "tex"
+base = "Computer Modern"
+source = "https://ctan.org/pkg/newcomputermodern"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/newcomputermodern.zip"
+path = "newcomputermodern/otf/NewCMMath-Regular.otf"

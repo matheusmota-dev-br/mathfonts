@@ -1,0 +1,11 @@
+name = "Asana Math"
+file = "Asana-Math.otf"
+license = "OFL-1.1"
+style = "serif"
+base = "Palatino"
+source = "https://ctan.org/pkg/asana-math"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/Asana-Math.zip"
+path = "Asana-Math/Asana-Math.otf"

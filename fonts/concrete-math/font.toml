@@ -1,0 +1,12 @@
+name = "Concrete Math"
+file = "Concrete-Math.otf"
+license = "OFL-1.1"
+style = "tex"
+base = "Concrete Roman"
+designer = "Ulrik Vieth (Metafont)"
+source = "https://ctan.org/pkg/concmath-otf"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/concmath-otf.zip"
+path = "concmath-otf/Concrete-Math.otf"

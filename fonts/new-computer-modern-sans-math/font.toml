@@ -1,0 +1,11 @@
+name = "New Computer Modern Sans Math"
+file = "NewCMSansMath-Regular.otf"
+license = "GUST-Font-License"
+style = "sans"
+base = "Computer Modern Sans"
+source = "https://ctan.org/pkg/newcomputermodern"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/newcomputermodern.zip"
+path = "newcomputermodern/otf/NewCMSansMath-Regular.otf"

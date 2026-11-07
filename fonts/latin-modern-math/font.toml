@@ -1,0 +1,11 @@
+name = "Latin Modern Math"
+file = "latinmodern-math.otf"
+license = "GUST-Font-License"
+style = "tex"
+base = "Computer Modern"
+source = "https://ctan.org/pkg/lm-math"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://mirrors.ctan.org/fonts/lm-math.zip"
+path = "lm-math/opentype/latinmodern-math.otf"

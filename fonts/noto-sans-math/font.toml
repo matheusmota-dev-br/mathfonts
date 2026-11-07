@@ -1,0 +1,11 @@
+name = "Noto Sans Math"
+file = "NotoSansMath-Regular.ttf"
+license = "OFL-1.1"
+style = "sans"
+base = "Noto Sans"
+designer = "Monotype Design Team, Delve Withrington, Jeff Kellem"
+source = "https://fonts.google.com/noto/specimen/Noto+Sans+Math"
+
+# where the file comes from: the weekly check downloads it again and compares
+[upstream]
+url = "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmath/NotoSansMath-Regular.ttf"
