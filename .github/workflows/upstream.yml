@@ -1,0 +1,36 @@
+# Once a week, downloads every font again from its upstream and compares it with the catalog's
+# file. When one changed or could not be downloaded, it opens an issue (or updates the open one).
+name: upstream
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - id: refresh
+        run: python3 -I scripts/refresh.py --markdown upstream.md
+        continue-on-error: true
+      - name: Open or update the issue
+        if: steps.refresh.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Upstream fonts changed"
+          number=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body-file upstream.md
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file upstream.md
+          fi

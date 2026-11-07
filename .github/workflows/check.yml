@@ -1,0 +1,63 @@
+# Checks the fonts a pull request adds or changes, and comments the report on it.
+#
+# It runs on pull_request_target so that it can comment on pull requests from forks. For that
+# reason it never runs the pull request's code: it builds the tool from the base branch and takes
+# only the pull request's fonts/ folder, which it reads as data.
+name: check
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths: ["fonts/**"]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  fonts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release --locked
+      - name: Take the pull request's fonts
+        env:
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch --no-tags --depth=1 origin "pull/$NUMBER/head:pr"
+          git checkout pr -- fonts
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" pr -- fonts \
+            | cut -d/ -f1-2 | sort -u > changed.txt
+          cat changed.txt
+      - name: Check them
+        id: check
+        run: |
+          mapfile -t dirs < <(while read -r d; do [ -d "$d" ] && echo "$d"; done < changed.txt)
+          if [ "${#dirs[@]}" -eq 0 ]; then
+            echo "Only removed fonts in this pull request." > report.md
+            exit 0
+          fi
+          ./target/release/mathfonts check "${dirs[@]}" --report report.md
+      - name: Comment the report
+        if: always() && hashFiles('report.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          marker="<!-- mathfonts-check -->"
+          { echo "$marker"; cat report.md; } > body.md
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$NUMBER/comments" --paginate \
+            --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@body.md > /dev/null
+          else
+            gh pr comment "$NUMBER" --repo "$GITHUB_REPOSITORY" --body-file body.md
+          fi
