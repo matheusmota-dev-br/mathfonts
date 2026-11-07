@@ -4,7 +4,7 @@
 
 A catalog of OpenType math fonts. Each font is checked, and every equation on the site is drawn by [mathra](https://github.com/matheusmota-dev-br/mathra) in that font, so you see what a font does to a fraction, a sum or a Greek letter before you download it.
 
-The catalog has 22 fonts, all free to share: STIX Two, Latin Modern, New Computer Modern, the TeX Gyre fonts, Libertinus, Fira, Noto Sans, Euler, Garamond and others. Each one comes as its authors published it, with its license.
+The catalog has 23 fonts, all free to share: STIX Two, Latin Modern, New Computer Modern, the TeX Gyre fonts, Libertinus, Fira, Noto Sans, Euler, Garamond and others. Each one comes as its authors published it, with its license.
 
 ## What the site shows
 
@@ -27,6 +27,7 @@ src/                     the mathfonts tool: checks fonts and builds the site
 site/                    the site's style.css and app.js
 scripts/refresh.py       downloads every font again from upstream and compares
 scripts/brand.py         draws the banner and the favicon from the catalog's fonts
+scripts/chalk.py         draws Lousa Math: Fira Math in chalk, with its MATH table kept
 scripts/grid.py          builds the grids for drawing a math font by hand (large and compact) in site/grid/
 scripts/hand.py          makes a math font from photos of the filled-in grid
 ```
