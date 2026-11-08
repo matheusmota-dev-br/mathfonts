@@ -42,6 +42,8 @@ cargo run --release -- build                      # check every font, build the 
 python3 scripts/refresh.py                        # compare every font with its upstream file
 ```
 
+The build also writes `dist/catalog.json`: every font with its name, style, license, file, size, sha256 and coverage, the file paths relative to the catalog. mathra's playground lists the fonts from it, and its JavaScript and Python packages load a font by its slug (`loadFontFromCatalog("euler-math")`, `mathra.load_font_from_catalog("euler-math")`), checking the file against the sha256. `version` changes only if a field changes meaning.
+
 To see the site, serve `dist/` (for example `python3 -m http.server -d dist`). Opening the files directly does not work: the grid and the comparison load their equations with `fetch`.
 
 ### The checks
