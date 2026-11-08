@@ -353,6 +353,33 @@ path = "euler-math/Euler-Math.otf"</pre>
     page("Add your font · mathfonts", "How to add an OpenType math font to mathfonts with a pull request.", "", "contribute.html", &body)
 }
 
+/// The catalog for programs: mathra's playground and packages load a font from it by its slug.
+/// `file` is relative to this file; `sha256` lets a program check the bytes it downloaded, so the
+/// same slug and hash always give the same font. `version` changes only if a field changes meaning.
+fn catalog(results: &[(Entry, Report)]) -> String {
+    let fonts: Vec<serde_json::Value> = results
+        .iter()
+        .map(|(e, r)| {
+            serde_json::json!({
+                "slug": e.slug,
+                "name": e.meta.name,
+                "style": e.style_label(),
+                "base": e.meta.base,
+                "designer": e.meta.designer,
+                "license": e.meta.license,
+                "license_file": format!("files/{}/LICENSE.txt", e.slug),
+                "file": format!("files/{}/{}", e.slug, e.meta.file),
+                "size": r.size,
+                "sha256": r.sha256,
+                "coverage": r.coverage(),
+            })
+        })
+        .collect();
+    let mut text = serde_json::to_string_pretty(&serde_json::json!({ "version": 1, "mathra": mathra::VERSION, "fonts": fonts })).unwrap_or_default();
+    text.push('\n');
+    text
+}
+
 fn write(path: &Path, text: &str) -> Result<(), String> {
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
@@ -404,6 +431,7 @@ pub fn build(root: &Path, out: &Path, results: &[(Entry, Report)]) -> Result<(),
         copy(&e.font_path(), &out.join(format!("files/{}/{}", e.slug, e.meta.file)))?;
         copy(&e.dir.join("LICENSE.txt"), &out.join(format!("files/{}/LICENSE.txt", e.slug)))?;
     }
+    write(&out.join("catalog.json"), &catalog(results))?;
     write(&out.join("index.html"), &index(results, &first))?;
     write(&out.join("compare.html"), &compare(results))?;
     write(&out.join("write.html"), &write_page(results))?;
