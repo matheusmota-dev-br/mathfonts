@@ -1,0 +1,8 @@
+name = "Hera Math"
+file = "HeraMath-Regular.otf"
+license = "OFL-1.1"
+style = "sans"
+base = "Noto Sans"
+designer = "Matheus Mota, growing leaves on Noto Sans Math"
+source = "https://github.com/matheusmota-dev-br/mathfonts/blob/main/scripts/leaves.py"
+sample = '\oint_C \mathbf{F}\cdot d\mathbf{r} = \iint_S (\nabla \times \mathbf{F})\cdot d\mathbf{S}'
